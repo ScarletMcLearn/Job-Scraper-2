@@ -29,14 +29,15 @@ Treat these paths as local/generated output, not source:
 
 - `data/`
 - `output/`
+- `artifacts/`
 - `.uv-cache/`
 - `.pytest-tmp/`
 - `.venv/`
 - `pytest-cache-files-*/`
 - Python `__pycache__/` directories
 
-Do not commit generated SQLite databases, CSV exports, virtual environments,
-caches, logs, or local environment files.
+Do not commit generated SQLite databases, CSV exports, Markdown reports,
+virtual environments, caches, logs, or local environment files.
 
 ## LinkedIn Guardrail
 

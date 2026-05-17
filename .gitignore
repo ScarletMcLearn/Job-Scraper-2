@@ -20,6 +20,7 @@ dist/
 # Local runtime output
 data/
 output/
+artifacts/
 *.sqlite
 *.sqlite3
 *.db

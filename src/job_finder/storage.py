@@ -113,20 +113,7 @@ class JobStore:
         statuses: tuple[MatchStatus, ...] = (MatchStatus.INCLUDED, MatchStatus.REVIEW),
     ) -> int:
         csv_path.parent.mkdir(parents=True, exist_ok=True)
-        rows = self.connection.execute(
-            f"""
-            SELECT status, title, company, location, remote, support_evidence,
-                   matched_keywords, reasons, source, url, published_at,
-                   first_seen_at, last_seen_at
-            FROM jobs
-            WHERE status IN ({",".join("?" for _ in statuses)})
-            ORDER BY
-                CASE status WHEN 'included' THEN 0 WHEN 'review' THEN 1 ELSE 2 END,
-                published_at DESC,
-                last_seen_at DESC
-            """,
-            tuple(status.value for status in statuses),
-        ).fetchall()
+        rows = self._export_rows(statuses)
 
         with csv_path.open("w", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=CSV_COLUMNS)
@@ -150,6 +137,57 @@ class JobStore:
                     }
                 )
         return len(rows)
+
+    def export_markdown(
+        self,
+        markdown_path: Path,
+        statuses: tuple[MatchStatus, ...] = (MatchStatus.INCLUDED, MatchStatus.REVIEW),
+    ) -> int:
+        markdown_path.parent.mkdir(parents=True, exist_ok=True)
+        rows = self._export_rows(statuses)
+        status_counts = {status.value: 0 for status in statuses}
+        for row in rows:
+            status_counts[row["status"]] = status_counts.get(row["status"], 0) + 1
+
+        lines = [
+            "# Job Search Results",
+            "",
+            f"Generated: {now_utc().isoformat()}",
+            "",
+            "## Summary",
+            "",
+            f"- Total jobs: {len(rows)}",
+        ]
+        for status in statuses:
+            lines.append(f"- {status.value.title()}: {status_counts.get(status.value, 0)}")
+
+        for status in statuses:
+            status_rows = [row for row in rows if row["status"] == status.value]
+            lines.extend(["", f"## {status.value.title()}", ""])
+            if not status_rows:
+                lines.append("No jobs found.")
+                continue
+            for row in status_rows:
+                lines.extend(_markdown_job_lines(row))
+
+        markdown_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+        return len(rows)
+
+    def _export_rows(self, statuses: tuple[MatchStatus, ...]) -> list[sqlite3.Row]:
+        return self.connection.execute(
+            f"""
+            SELECT status, title, company, location, remote, support_evidence,
+                   matched_keywords, reasons, source, url, published_at,
+                   first_seen_at, last_seen_at
+            FROM jobs
+            WHERE status IN ({",".join("?" for _ in statuses)})
+            ORDER BY
+                CASE status WHEN 'included' THEN 0 WHEN 'review' THEN 1 ELSE 2 END,
+                published_at DESC,
+                last_seen_at DESC
+            """,
+            tuple(status.value for status in statuses),
+        ).fetchall()
 
     def _migrate(self) -> None:
         self.connection.executescript(
@@ -224,3 +262,43 @@ def _bool_label(value: int | None) -> str:
     if value is None:
         return ""
     return "true" if bool(value) else "false"
+
+
+def _markdown_job_lines(row: sqlite3.Row) -> list[str]:
+    title = _markdown_escape(row["title"])
+    company = _markdown_escape(row["company"])
+    url = _markdown_link_url(row["url"])
+    lines = [
+        f"### [{title}]({url})",
+        "",
+        f"- Company: {company}",
+        f"- Location: {_markdown_escape(row['location'] or '') or 'Not listed'}",
+        f"- Remote: {_bool_label(row['remote']) or 'not listed'}",
+        f"- Source: {_markdown_escape(row['source'])}",
+        f"- Published: {row['published_at'] or 'not listed'}",
+        f"- First seen: {row['first_seen_at']}",
+        f"- Last seen: {row['last_seen_at']}",
+    ]
+    for label, key in [
+        ("Support evidence", "support_evidence"),
+        ("Matched keywords", "matched_keywords"),
+        ("Reasons", "reasons"),
+    ]:
+        value = _json_list_to_text(row[key])
+        lines.append(f"- {label}: {_markdown_escape(value) if value else 'none'}")
+    lines.append("")
+    return lines
+
+
+def _markdown_escape(value: str) -> str:
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace("|", "\\|")
+        .replace("[", "\\[")
+        .replace("]", "\\]")
+    )
+
+
+def _markdown_link_url(value: str) -> str:
+    return str(value).replace(")", "%29").replace(" ", "%20")

@@ -87,6 +87,39 @@ def export(
     console.print(f"[green]Exported[/green] {count} rows to {app_config.output.csv_path}")
 
 
+@app.command("export-markdown")
+def export_markdown(
+    config: Path = typer.Option(
+        Path("config/search.yml"),
+        "--config",
+        "-c",
+        help="Path to the YAML search config.",
+    ),
+    output: Path = typer.Option(
+        Path("output/jobs.md"),
+        "--output",
+        "-o",
+        help="Path for the Markdown report.",
+    ),
+    include_excluded: bool = typer.Option(
+        False,
+        "--include-excluded",
+        help="Also export excluded rows.",
+    ),
+) -> None:
+    """Export existing SQLite results to Markdown."""
+    app_config = _load_or_create_config(config)
+    statuses = (MatchStatus.INCLUDED, MatchStatus.REVIEW)
+    if include_excluded:
+        statuses = (MatchStatus.INCLUDED, MatchStatus.REVIEW, MatchStatus.EXCLUDED)
+    store = JobStore(app_config.output.database_path)
+    try:
+        count = store.export_markdown(output, statuses=statuses)
+    finally:
+        store.close()
+    console.print(f"[green]Exported[/green] {count} rows to {output}")
+
+
 def _load_or_create_config(path: Path) -> AppConfig:
     if not path.exists():
         dump_default_config(path)

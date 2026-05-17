@@ -27,6 +27,14 @@ Scan results are written to:
 - `data/jobs.sqlite`
 - `output/jobs.csv`
 
+To run the full search and save a timestamped Markdown report:
+
+```powershell
+.\run-job-search.ps1
+```
+
+Reports are written under `artifacts/jobs/yy-mm-dd-hh-mm-ss-am/jobs.md`.
+
 ## Strictness modes
 
 Set `filters.strictness` in `config/search.yml`:
