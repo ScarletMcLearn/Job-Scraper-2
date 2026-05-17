@@ -98,7 +98,13 @@ jobs:
         run: |
           if [ -f output/jobs.md ]; then
             mkdir -p pages
-            cp output/jobs.md pages/index.md
+            {
+              printf '%s\n' '---'
+              printf '%s\n' 'title: Job Search Results'
+              printf '%s\n' '---'
+              printf '\n'
+              cat output/jobs.md
+            } > pages/index.md
             if [ -f output/jobs.csv ]; then
               cp output/jobs.csv pages/jobs.csv
             fi
@@ -113,11 +119,18 @@ jobs:
         if: steps.prepare-pages.outputs.publish == 'true'
         uses: actions/configure-pages@v5
 
+      - name: Build GitHub Pages site
+        if: steps.prepare-pages.outputs.publish == 'true'
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: pages
+          destination: _site
+
       - name: Upload GitHub Pages artifact
         if: steps.prepare-pages.outputs.publish == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: pages
+          path: _site
 
       - name: Deploy GitHub Pages site
         id: deployment
