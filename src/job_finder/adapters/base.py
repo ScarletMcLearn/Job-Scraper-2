@@ -14,6 +14,15 @@ class UnsupportedSourceError(SourceAdapterError):
     pass
 
 
+class SkippedSourceAdapter:
+    def __init__(self, name: str, reason: str) -> None:
+        self.name = name
+        self.reason = reason
+
+    async def fetch(self) -> list[JobPost]:
+        raise SourceAdapterError(self.reason)
+
+
 class JobSourceAdapter(Protocol):
     name: str
 

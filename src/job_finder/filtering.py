@@ -23,6 +23,10 @@ ROLE_RULES = [
     _rule("SQA", r"\bs\.?q\.?a\.?\b|\bsoftware quality assurance\b"),
     _rule("SDET", r"\bsdet\b|\bsoftware development engineer(?:s)? in test\b"),
     _rule("Quality Assurance", r"\bquality assurance\b"),
+    _rule(
+        "Quality Engineer",
+        r"\b(?:software )?quality engineer\b|\bsoftware quality engineering\b",
+    ),
     _rule("Automation", r"\bautomation\b|\bautomated test(?:ing)?\b"),
     _rule("Selenium", r"\bselenium\b"),
     _rule("Cypress", r"\bcypress\b"),
@@ -34,12 +38,14 @@ TITLE_ROLE_RULES = [
     _rule("SQA", r"\bs\.?q\.?a\.?\b|\bsoftware quality assurance\b"),
     _rule("SDET", r"\bsdet\b|\bsoftware development engineer(?:s)? in test\b"),
     _rule("Quality Assurance", r"\bquality assurance\b"),
+    _rule("Quality Engineer", r"\b(?:software )?quality engineer\b"),
     _rule(
         "Test",
-        r"\b(?:software )?test(?:ing)? (?:engineer|analyst|specialist|lead|manager)\b|\bsoftware tester\b|\btester\b",
+        r"\b(?:software |manual )?test(?:ing)? (?:engineer|analyst|specialist|lead|manager)\b|\bmanual tester\b|\bsoftware tester\b|\btester\b",
     ),
     _rule(
-        "Automation", r"\b(?:qa|test) automation\b|\bautomation (?:qa|test|tester)\b"
+        "Automation",
+        r"\b(?:qa|test) automation\b|\bautomation (?:engineer|qa|test|tester)\b",
     ),
     _rule("Selenium", r"\bselenium\b"),
     _rule("Cypress", r"\bcypress\b"),

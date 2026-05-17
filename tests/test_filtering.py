@@ -1,5 +1,7 @@
 from typing import Literal
 
+import pytest
+
 from job_finder.config import FilterConfig
 from job_finder.filtering import JobClassifier
 from job_finder.models import JobMatch, JobPost, MatchStatus
@@ -48,6 +50,31 @@ def test_includes_worldwide_remote_role() -> None:
 
     assert match.status == MatchStatus.INCLUDED
     assert "worldwide remote" in match.support_evidence
+
+
+@pytest.mark.parametrize(
+    ("title", "expected_keyword"),
+    [
+        ("QA Analyst", "QA"),
+        ("Quality Engineer", "Quality Engineer"),
+        ("Software Quality Engineer", "Quality Engineer"),
+        ("Test Engineer", "Test"),
+        ("Manual Tester", "Test"),
+        ("Automation Engineer", "Automation"),
+    ],
+)
+def test_includes_expanded_qa_title_variants(
+    title: str,
+    expected_keyword: str,
+) -> None:
+    match = classify(
+        title,
+        "Fully remote role open worldwide.",
+        remote=True,
+    )
+
+    assert match.status == MatchStatus.INCLUDED
+    assert expected_keyword in match.matched_keywords
 
 
 def test_review_for_remote_without_geography() -> None:

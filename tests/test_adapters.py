@@ -2,31 +2,46 @@ import asyncio
 import json
 
 import httpx
+import pytest
 
+from job_finder.adapters.adzuna import AdzunaAdapter
 from job_finder.adapters.arbeitnow import ArbeitnowAdapter
 from job_finder.adapters.ashby import AshbyAdapter
 from job_finder.adapters.greenhouse import GreenhouseAdapter
 from job_finder.adapters.himalayas import HimalayasAdapter
 from job_finder.adapters.jobicy import JobicyAdapter
+from job_finder.adapters.jooble import JoobleAdapter
 from job_finder.adapters.lever import LeverAdapter
+from job_finder.adapters.recruitee import RecruiteeAdapter
 from job_finder.adapters.remotejobs_org import RemoteJobsOrgAdapter
 from job_finder.adapters.remoteok import RemoteOkAdapter
 from job_finder.adapters.remotive import RemotiveAdapter
 from job_finder.adapters.smartrecruiters import SmartRecruitersAdapter
+from job_finder.adapters.themuse import TheMuseAdapter
 from job_finder.adapters.weworkremotely import WeWorkRemotelyAdapter
+from job_finder.adapters.workable import WorkableAdapter
+from job_finder.adapters.workanywhere import WorkAnywhereAdapter
 from job_finder.config import (
+    AdzunaConfig,
+    AppConfig,
     ArbeitnowConfig,
     AshbyConfig,
     GreenhouseConfig,
     HimalayasConfig,
     JobicyConfig,
+    JoobleConfig,
     LeverConfig,
+    RecruiteeConfig,
     RemoteJobsOrgConfig,
     RemoteOkConfig,
     RemotiveConfig,
     SmartRecruitersConfig,
+    TheMuseConfig,
     WeWorkRemotelyConfig,
+    WorkableConfig,
+    WorkAnywhereConfig,
 )
+from job_finder.runner import build_adapters
 
 
 def test_remotive_adapter_parses_jobs() -> None:
@@ -365,6 +380,264 @@ def test_weworkremotely_adapter_parses_rss_items() -> None:
     assert jobs[0].remote is True
 
 
+def test_themuse_adapter_parses_jobs() -> None:
+    async def run():
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "page_count": 1,
+                        "results": [
+                            {
+                                "id": 101,
+                                "name": "Quality Engineer",
+                                "company": {"name": "Example"},
+                                "refs": {
+                                    "landing_page": "https://www.themuse.com/jobs/example/quality-engineer"
+                                },
+                                "locations": [{"name": "Flexible / Remote"}],
+                                "contents": "<p>Remote worldwide.</p>",
+                                "publication_date": "2026-01-01T00:00:00Z",
+                                "categories": [{"name": "Software Engineering"}],
+                                "levels": [{"name": "Mid Level"}],
+                            }
+                        ],
+                    },
+                )
+            )
+        )
+        try:
+            return await TheMuseAdapter(
+                TheMuseConfig(
+                    categories=["Software Engineering"],
+                    locations=["Flexible / Remote"],
+                    max_pages=1,
+                ),
+                client=client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "themuse"
+    assert jobs[0].title == "Quality Engineer"
+    assert jobs[0].remote is True
+
+
+def test_adzuna_adapter_parses_jobs() -> None:
+    async def run():
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "results": [
+                            {
+                                "id": "adz-1",
+                                "title": "QA Engineer",
+                                "company": {"display_name": "Example"},
+                                "redirect_url": "https://example.com/adzuna/qa",
+                                "location": {"display_name": "Remote, United Kingdom"},
+                                "description": "Remote worldwide. Visa support.",
+                                "created": "2026-01-01T00:00:00Z",
+                                "category": {"label": "IT Jobs"},
+                                "contract_time": "full_time",
+                            }
+                        ]
+                    },
+                )
+            )
+        )
+        try:
+            return await AdzunaAdapter(
+                AdzunaConfig(
+                    search_terms=["qa"],
+                    country_codes=["gb"],
+                    locations=["remote"],
+                    max_pages=1,
+                    results_per_page=1,
+                ),
+                "app-id",
+                "app-key",
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "adzuna"
+    assert jobs[0].company == "Example"
+    assert jobs[0].remote is True
+
+
+def test_jooble_adapter_parses_jobs() -> None:
+    async def run():
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "jobs": [
+                            {
+                                "id": "job-1",
+                                "title": "Manual Tester",
+                                "company": "Example",
+                                "link": "https://example.com/jooble/manual-tester",
+                                "location": "Remote",
+                                "snippet": "Remote worldwide testing role.",
+                                "updated": "2026-01-01T00:00:00Z",
+                                "source": "Example Feed",
+                            }
+                        ]
+                    },
+                )
+            )
+        )
+        try:
+            return await JoobleAdapter(
+                JoobleConfig(
+                    search_terms=["manual tester"],
+                    locations=["Remote"],
+                    max_pages=1,
+                    results_per_page=1,
+                ),
+                "api-key",
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "jooble"
+    assert jobs[0].title == "Manual Tester"
+    assert jobs[0].remote is True
+
+
+def test_workable_adapter_parses_jobs() -> None:
+    async def run():
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "name": "Example",
+                        "jobs": [
+                            {
+                                "id": "workable-1",
+                                "title": "Automation Engineer",
+                                "url": "https://apply.workable.com/example/j/workable-1/",
+                                "location": {
+                                    "location_str": "Remote",
+                                    "telecommuting": True,
+                                },
+                                "description": "Remote worldwide.",
+                                "requirements": "Playwright preferred.",
+                                "created_at": "2026-01-01T00:00:00Z",
+                            }
+                        ],
+                    },
+                )
+            )
+        )
+        try:
+            return await WorkableAdapter(
+                WorkableConfig(account_subdomains=["example"]),
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "workable"
+    assert jobs[0].company == "Example"
+    assert jobs[0].remote is True
+
+
+def test_recruitee_adapter_parses_feed_jobs() -> None:
+    async def run():
+        feed = """<?xml version="1.0" encoding="UTF-8"?>
+        <jobs>
+          <job>
+            <reference>rec-1</reference>
+            <title>Software Quality Engineer</title>
+            <company>Example</company>
+            <url>https://example.com/recruitee/software-quality-engineer</url>
+            <remote>true</remote>
+            <city>Remote</city>
+            <country>Worldwide</country>
+            <description_requirements><![CDATA[Remote worldwide.]]></description_requirements>
+            <posted>2026-01-01T00:00:00Z</posted>
+          </job>
+        </jobs>
+        """
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(200, content=feed)
+            )
+        )
+        try:
+            return await RecruiteeAdapter(
+                RecruiteeConfig(feed_urls=["https://example.com/feed.xml"]),
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "recruitee"
+    assert jobs[0].location == "Remote, Worldwide"
+    assert jobs[0].remote is True
+
+
+def test_workanywhere_adapter_parses_rss_items() -> None:
+    async def run():
+        rss = """<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>Example: QA Analyst</title>
+              <link>https://workanywhere.pro/jobs/example-qa-analyst</link>
+              <guid>wa-1</guid>
+              <pubDate>Thu, 01 Jan 2026 00:00:00 +0000</pubDate>
+              <description><![CDATA[Work from anywhere.]]></description>
+              <category>Engineering</category>
+            </item>
+          </channel>
+        </rss>
+        """
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(200, content=rss)
+            )
+        )
+        try:
+            return await WorkAnywhereAdapter(
+                WorkAnywhereConfig(feed_urls=["https://example.com/feed.xml"]),
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "workanywhere"
+    assert jobs[0].company == "Example"
+    assert jobs[0].title == "QA Analyst"
+    assert jobs[0].remote is True
+
+
 def test_ashby_adapter_parses_jobs() -> None:
     async def run():
         client = httpx.AsyncClient(
@@ -497,3 +770,42 @@ def test_smartrecruiters_adapter_parses_jobs_with_details() -> None:
     assert jobs[0].url == "https://jobs.smartrecruiters.com/example/sr-1"
     assert jobs[0].remote is True
     assert "Visa sponsorship" in jobs[0].description
+
+
+def test_build_adapters_reports_missing_key_sources_as_skipped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("ADZUNA_APP_ID", raising=False)
+    monkeypatch.delenv("ADZUNA_APP_KEY", raising=False)
+    monkeypatch.delenv("JOOBLE_API_KEY", raising=False)
+
+    adapters = build_adapters(AppConfig())
+    adapters_by_name = {adapter.name: adapter for adapter in adapters}
+
+    assert adapters_by_name["adzuna"].__class__.__name__ == "SkippedSourceAdapter"
+    assert adapters_by_name["jooble"].__class__.__name__ == "SkippedSourceAdapter"
+
+
+def test_build_adapters_uses_key_sources_when_credentials_exist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ADZUNA_APP_ID", "app-id")
+    monkeypatch.setenv("ADZUNA_APP_KEY", "app-key")
+    monkeypatch.setenv("JOOBLE_API_KEY", "api-key")
+
+    adapters = build_adapters(AppConfig())
+    adapters_by_name = {adapter.name: adapter for adapter in adapters}
+
+    assert adapters_by_name["adzuna"].__class__.__name__ == "AdzunaAdapter"
+    assert adapters_by_name["jooble"].__class__.__name__ == "JoobleAdapter"
+
+
+def test_build_adapters_omits_disabled_key_sources() -> None:
+    config = AppConfig()
+    config.sources.adzuna.enabled = False
+    config.sources.jooble.enabled = False
+
+    adapter_names = {adapter.name for adapter in build_adapters(config)}
+
+    assert "adzuna" not in adapter_names
+    assert "jooble" not in adapter_names

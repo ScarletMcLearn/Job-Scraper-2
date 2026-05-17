@@ -30,7 +30,6 @@ class LeverAdapter:
             for company in self.config.companies:
                 response = await client.get(
                     f"{self.base_url}/{company}",
-                    params={"mode": "json"},
                 )
                 response.raise_for_status()
                 payload = response.json()

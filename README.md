@@ -3,7 +3,9 @@
 Compliance-first CLI for finding QA/Test/SQA/SDET/automation jobs that show visa,
 relocation, or Bangladesh-eligible remote evidence.
 
-The project intentionally does not scrape LinkedIn pages. Use:
+The project intentionally does not scrape LinkedIn pages. LinkedIn scan support
+must wait for approved LinkedIn API access, licensed job data, or exported job
+data access. Use:
 
 ```powershell
 uv --cache-dir .uv-cache run job-finder linkedin-searches
@@ -76,6 +78,7 @@ Enabled by default:
 - Remote OK public API
 - RemoteJobs.org public API
 - We Work Remotely public RSS feed
+- The Muse public jobs API
 
 Configured when slugs are added:
 
@@ -83,9 +86,24 @@ Configured when slugs are added:
 - Greenhouse job-board API via `sources.greenhouse.board_tokens`
 - Lever postings API via `sources.lever.companies`
 - SmartRecruiters postings API via `sources.smartrecruiters.companies`
+- Workable public account API via `sources.workable.account_subdomains`
+- Recruitee XML feeds via `sources.recruitee.feed_urls`
+
+Available but disabled by default:
+
+- WorkAnywhere.pro public RSS feeds via `sources.workanywhere.feed_urls`
+
+Enabled when free API credentials are available:
+
+- Adzuna API with `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`
+- Jooble API with `JOOBLE_API_KEY`
+
+Optional:
+
+- The Muse API can use `THEMUSE_API_KEY`, but the source also works without it.
 
 LinkedIn direct ingestion is a disabled placeholder until authorized API, licensed
-data, or exported data access is available.
+data, or exported data access is available. Do not replace it with page scraping.
 
 Remote OK, RemoteJobs.org, and We Work Remotely request source attribution/link-back
 when their listings are displayed. The CSV keeps the source name and original job URL

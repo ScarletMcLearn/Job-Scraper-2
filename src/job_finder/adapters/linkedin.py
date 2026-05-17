@@ -13,7 +13,8 @@ class LinkedinAuthorizedPlaceholderAdapter:
 
     async def fetch(self) -> list[JobPost]:
         msg = (
-            "LinkedIn direct ingestion is disabled. Provide authorized LinkedIn API, "
-            "licensed data, or exported data access before implementing this adapter."
+            "LinkedIn scan ingestion is disabled. This project does not scrape "
+            "LinkedIn pages; enable this source only after approved LinkedIn API "
+            "access or licensed/exported job-data access is available."
         )
         raise UnsupportedSourceError(msg)

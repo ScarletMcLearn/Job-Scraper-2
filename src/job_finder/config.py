@@ -11,23 +11,56 @@ DEFAULT_ROLE_KEYWORDS = [
     "Test",
     "SQA",
     "SDET",
+    "QA engineer",
+    "QA analyst",
+    "quality engineer",
     "quality assurance",
+    "software quality engineer",
     "software quality assurance",
     "software development engineer in test",
+    "test engineer",
+    "test automation",
+    "manual tester",
     "automation",
+    "automation engineer",
     "selenium",
     "cypress",
     "playwright",
 ]
+
+DEFAULT_SEARCH_TERMS = [
+    "qa",
+    "qa engineer",
+    "qa analyst",
+    "quality assurance",
+    "quality engineer",
+    "software quality engineer",
+    "test engineer",
+    "test automation",
+    "manual tester",
+    "sdet",
+    "automation engineer",
+]
+
+DEFAULT_ASHBY_ORGANIZATION_NAMES = ["Ashby", "OpenAI", "supabase"]
+DEFAULT_GREENHOUSE_BOARD_TOKENS = ["gitlab", "canonical"]
+DEFAULT_LEVER_COMPANIES = [
+    "revealtech",
+    "insiderone",
+    "chooose",
+    "pingwind",
+    "heartbeathealth",
+    "getwingapp",
+    "caseware",
+]
+DEFAULT_SMARTRECRUITERS_COMPANIES = ["SmartRecruiters"]
 
 StrictnessMode = Literal["strict", "evidence", "broad", "lenient", "discovery"]
 
 
 class RemotiveConfig(BaseModel):
     enabled: bool = True
-    search_terms: list[str] = Field(
-        default_factory=lambda: ["qa", "test automation", "sdet", "quality assurance"]
-    )
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
 
 
 class ArbeitnowConfig(BaseModel):
@@ -37,18 +70,14 @@ class ArbeitnowConfig(BaseModel):
 
 class HimalayasConfig(BaseModel):
     enabled: bool = True
-    search_terms: list[str] = Field(
-        default_factory=lambda: ["qa", "test automation", "sdet", "quality assurance"]
-    )
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
     max_pages: int = 2
     page_size: int = 20
 
 
 class JobicyConfig(BaseModel):
     enabled: bool = True
-    search_terms: list[str] = Field(
-        default_factory=lambda: ["qa", "test automation", "sdet", "quality assurance"]
-    )
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
     count: int = 50
 
 
@@ -59,9 +88,7 @@ class RemoteOkConfig(BaseModel):
 
 class RemoteJobsOrgConfig(BaseModel):
     enabled: bool = True
-    search_terms: list[str] = Field(
-        default_factory=lambda: ["qa", "test automation", "sdet", "quality assurance"]
-    )
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
     limit: int = 50
     max_pages: int = 2
 
@@ -76,27 +103,82 @@ class WeWorkRemotelyConfig(BaseModel):
 
 class AshbyConfig(BaseModel):
     enabled: bool = True
-    organization_names: list[str] = Field(default_factory=list)
+    organization_names: list[str] = Field(
+        default_factory=DEFAULT_ASHBY_ORGANIZATION_NAMES.copy
+    )
     include_compensation: bool = False
 
 
 class GreenhouseConfig(BaseModel):
     enabled: bool = True
-    board_tokens: list[str] = Field(default_factory=list)
+    board_tokens: list[str] = Field(default_factory=DEFAULT_GREENHOUSE_BOARD_TOKENS.copy)
 
 
 class LeverConfig(BaseModel):
     enabled: bool = True
-    companies: list[str] = Field(default_factory=list)
+    companies: list[str] = Field(default_factory=DEFAULT_LEVER_COMPANIES.copy)
 
 
 class SmartRecruitersConfig(BaseModel):
     enabled: bool = True
-    companies: list[str] = Field(default_factory=list)
-    search_terms: list[str] = Field(
-        default_factory=lambda: ["qa", "test automation", "sdet", "quality assurance"]
-    )
+    companies: list[str] = Field(default_factory=DEFAULT_SMARTRECRUITERS_COMPANIES.copy)
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
     limit: int = 50
+
+
+class TheMuseConfig(BaseModel):
+    enabled: bool = True
+    api_key_env: str = "THEMUSE_API_KEY"
+    categories: list[str] = Field(
+        default_factory=lambda: ["Software Engineering", "Science and Engineering"]
+    )
+    locations: list[str] = Field(default_factory=lambda: ["Flexible / Remote", "Remote"])
+    max_pages: int = 2
+
+
+class AdzunaConfig(BaseModel):
+    enabled: bool = True
+    app_id_env: str = "ADZUNA_APP_ID"
+    app_key_env: str = "ADZUNA_APP_KEY"
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
+    country_codes: list[str] = Field(
+        default_factory=lambda: ["gb", "us", "ca", "au", "sg", "in"]
+    )
+    locations: list[str] = Field(default_factory=lambda: ["remote", ""])
+    max_pages: int = 2
+    results_per_page: int = 50
+
+
+class JoobleConfig(BaseModel):
+    enabled: bool = True
+    api_key_env: str = "JOOBLE_API_KEY"
+    search_terms: list[str] = Field(default_factory=DEFAULT_SEARCH_TERMS.copy)
+    locations: list[str] = Field(
+        default_factory=lambda: ["Remote", "Worldwide", "Bangladesh"]
+    )
+    max_pages: int = 2
+    results_per_page: int = 50
+
+
+class WorkableConfig(BaseModel):
+    enabled: bool = True
+    account_subdomains: list[str] = Field(default_factory=list)
+
+
+class RecruiteeConfig(BaseModel):
+    enabled: bool = True
+    feed_urls: list[str] = Field(default_factory=list)
+
+
+class WorkAnywhereConfig(BaseModel):
+    enabled: bool = False
+    feed_urls: list[str] = Field(
+        default_factory=lambda: [
+            "https://workanywhere.pro/rss.xml",
+            "https://workanywhere.pro/rss/engineer.xml",
+        ]
+    )
+    max_items_per_feed: int = 100
 
 
 class LinkedinConfig(BaseModel):
@@ -114,6 +196,12 @@ class SourcesConfig(BaseModel):
     remoteok: RemoteOkConfig = Field(default_factory=RemoteOkConfig)
     remotejobs_org: RemoteJobsOrgConfig = Field(default_factory=RemoteJobsOrgConfig)
     weworkremotely: WeWorkRemotelyConfig = Field(default_factory=WeWorkRemotelyConfig)
+    themuse: TheMuseConfig = Field(default_factory=TheMuseConfig)
+    adzuna: AdzunaConfig = Field(default_factory=AdzunaConfig)
+    jooble: JoobleConfig = Field(default_factory=JoobleConfig)
+    workable: WorkableConfig = Field(default_factory=WorkableConfig)
+    recruitee: RecruiteeConfig = Field(default_factory=RecruiteeConfig)
+    workanywhere: WorkAnywhereConfig = Field(default_factory=WorkAnywhereConfig)
     ashby: AshbyConfig = Field(default_factory=AshbyConfig)
     greenhouse: GreenhouseConfig = Field(default_factory=GreenhouseConfig)
     lever: LeverConfig = Field(default_factory=LeverConfig)

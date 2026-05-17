@@ -10,6 +10,8 @@ from job_finder.models import JobPost, normalize_datetime
 if TYPE_CHECKING:
     from job_finder.config import JobicyConfig
 
+HTTP_BAD_REQUEST = 400
+
 
 class JobicyAdapter:
     name = "jobicy"
@@ -32,7 +34,7 @@ class JobicyAdapter:
             for term in self.config.search_terms:
                 params = {"count": self.config.count, "tag": term}
                 response = await client.get(f"{self.base_url}?{urlencode(params)}")
-                if response.status_code == 400:
+                if response.status_code == HTTP_BAD_REQUEST:
                     continue
                 response.raise_for_status()
                 payload = response.json()

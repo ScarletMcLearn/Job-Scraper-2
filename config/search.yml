@@ -8,10 +8,18 @@ filters:
     - Test
     - SQA
     - SDET
+    - QA engineer
+    - QA analyst
+    - quality engineer
     - quality assurance
+    - software quality engineer
     - software quality assurance
     - software development engineer in test
+    - test engineer
+    - test automation
+    - manual tester
     - automation
+    - automation engineer
     - selenium
     - cypress
     - playwright
@@ -20,9 +28,16 @@ sources:
     enabled: true
     search_terms:
       - qa
-      - test automation
-      - sdet
+      - qa engineer
+      - qa analyst
       - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
   arbeitnow:
     enabled: true
     max_pages: 2
@@ -30,18 +45,32 @@ sources:
     enabled: true
     search_terms:
       - qa
-      - test automation
-      - sdet
+      - qa engineer
+      - qa analyst
       - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
     max_pages: 2
     page_size: 20
   jobicy:
     enabled: true
     search_terms:
       - qa
-      - test automation
-      - sdet
+      - qa engineer
+      - qa analyst
       - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
     count: 50
   remoteok:
     enabled: true
@@ -50,9 +79,16 @@ sources:
     enabled: true
     search_terms:
       - qa
-      - test automation
-      - sdet
+      - qa engineer
+      - qa analyst
       - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
     limit: 50
     max_pages: 2
   weworkremotely:
@@ -60,26 +96,117 @@ sources:
     feed_urls:
       - https://weworkremotely.com/remote-jobs.rss
     max_items_per_feed: 100
+  themuse:
+    enabled: true
+    api_key_env: THEMUSE_API_KEY
+    categories:
+      - Software Engineering
+      - Science and Engineering
+    locations:
+      - Flexible / Remote
+      - Remote
+    max_pages: 2
+  adzuna:
+    enabled: true
+    app_id_env: ADZUNA_APP_ID
+    app_key_env: ADZUNA_APP_KEY
+    search_terms:
+      - qa
+      - qa engineer
+      - qa analyst
+      - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
+    country_codes:
+      - gb
+      - us
+      - ca
+      - au
+      - sg
+      - in
+    locations:
+      - remote
+      - ""
+    max_pages: 2
+    results_per_page: 50
+  jooble:
+    enabled: true
+    api_key_env: JOOBLE_API_KEY
+    search_terms:
+      - qa
+      - qa engineer
+      - qa analyst
+      - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
+    locations:
+      - Remote
+      - Worldwide
+      - Bangladesh
+    max_pages: 2
+    results_per_page: 50
+  workable:
+    enabled: true
+    account_subdomains: []
+  recruitee:
+    enabled: true
+    feed_urls: []
+  workanywhere:
+    enabled: false
+    feed_urls:
+      - https://workanywhere.pro/rss.xml
+      - https://workanywhere.pro/rss/engineer.xml
+    max_items_per_feed: 100
   ashby:
     enabled: true
     # Add Ashby board names from URLs like https://jobs.ashbyhq.com/Ashby.
-    organization_names: []
+    organization_names:
+      - Ashby
+      - OpenAI
+      - supabase
     include_compensation: false
   greenhouse:
     enabled: true
-    board_tokens: []
+    board_tokens:
+      - gitlab
+      - canonical
   lever:
     enabled: true
-    companies: []
+    companies:
+      - revealtech
+      - insiderone
+      - chooose
+      - pingwind
+      - heartbeathealth
+      - getwingapp
+      - caseware
   smartrecruiters:
     enabled: true
     # Add company identifiers from URLs like https://careers.smartrecruiters.com/smartrecruiters.
-    companies: []
+    companies:
+      - SmartRecruiters
     search_terms:
       - qa
-      - test automation
-      - sdet
+      - qa engineer
+      - qa analyst
       - quality assurance
+      - quality engineer
+      - software quality engineer
+      - test engineer
+      - test automation
+      - manual tester
+      - sdet
+      - automation engineer
     limit: 50
   linkedin:
     enabled: false
