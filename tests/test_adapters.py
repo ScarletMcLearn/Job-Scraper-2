@@ -210,6 +210,47 @@ def test_jobicy_adapter_parses_jobs() -> None:
     assert jobs[0].remote is True
 
 
+def test_jobicy_adapter_skips_bad_request_terms() -> None:
+    async def run():
+        requested_tags: list[str | None] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested_tags.append(request.url.params.get("tag"))
+            if request.url.params.get("tag") == "qa":
+                return httpx.Response(400)
+            return httpx.Response(
+                200,
+                json={
+                    "jobs": [
+                        {
+                            "id": 456,
+                            "jobTitle": "SDET",
+                            "companyName": "Example",
+                            "url": "https://example.com/jobicy/sdet",
+                            "jobGeo": "Anywhere",
+                            "jobDescription": "<p>Remote role.</p>",
+                            "pubDate": "2026-01-01T00:00:00+00:00",
+                        }
+                    ]
+                },
+            )
+
+        client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        try:
+            jobs = await JobicyAdapter(
+                JobicyConfig(search_terms=["qa", "sdet"], count=1), client
+            ).fetch()
+            return requested_tags, jobs
+        finally:
+            await client.aclose()
+
+    requested_tags, jobs = asyncio.run(run())
+
+    assert requested_tags == ["qa", "sdet"]
+    assert len(jobs) == 1
+    assert jobs[0].title == "SDET"
+
+
 def test_remoteok_adapter_parses_jobs_and_skips_metadata() -> None:
     async def run():
         client = httpx.AsyncClient(

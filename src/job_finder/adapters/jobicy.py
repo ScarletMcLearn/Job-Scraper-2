@@ -32,6 +32,8 @@ class JobicyAdapter:
             for term in self.config.search_terms:
                 params = {"count": self.config.count, "tag": term}
                 response = await client.get(f"{self.base_url}?{urlencode(params)}")
+                if response.status_code == 400:
+                    continue
                 response.raise_for_status()
                 payload = response.json()
                 for item in payload.get("jobs", []):
