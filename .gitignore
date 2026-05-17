@@ -1,0 +1,41 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.pytest-tmp/
+pytest-cache-files-*/
+
+# Virtual environments and package caches
+.venv/
+venv/
+env/
+.uv-cache/
+
+# Build and packaging output
+build/
+dist/
+*.egg-info/
+
+# Local runtime output
+data/
+output/
+*.sqlite
+*.sqlite3
+*.db
+*.csv
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

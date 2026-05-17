@@ -1,0 +1,43 @@
+[project]
+name = "job-finder"
+version = "0.1.0"
+description = "Compliance-first QA job finder for visa, relocation, and Bangladesh-eligible remote roles."
+readme = "README.md"
+authors = [
+    { name = "Scarlet McLearn", email = "getratulnow@gmail.com" }
+]
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "beautifulsoup4==4.14.3",
+    "httpx==0.28.1",
+    "pydantic==2.13.4",
+    "python-dateutil==2.9.0.post0",
+    "pyyaml==6.0.3",
+    "rich==15.0.0",
+    "typer==0.25.1",
+]
+
+[project.scripts]
+job-finder = "job_finder:main"
+
+[build-system]
+requires = ["uv_build==0.8.22"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest==9.0.3",
+]
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"
+testpaths = ["tests"]
+norecursedirs = [
+    ".*",
+    ".venv",
+    ".uv-cache",
+    ".pytest-tmp",
+    "pytest-cache-files-*",
+    "data",
+    "output",
+]

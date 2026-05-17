@@ -1,0 +1,41 @@
+filters:
+  target_country: Bangladesh
+  strictness: evidence
+  role_keywords:
+    - QA
+    - Test
+    - SQA
+    - SDET
+    - quality assurance
+    - software quality assurance
+    - software development engineer in test
+    - automation
+    - selenium
+    - cypress
+    - playwright
+sources:
+  remotive:
+    enabled: true
+    search_terms:
+      - qa
+      - test automation
+      - sdet
+      - quality assurance
+  arbeitnow:
+    enabled: true
+    max_pages: 2
+  greenhouse:
+    enabled: true
+    board_tokens: []
+  lever:
+    enabled: true
+    companies: []
+  linkedin:
+    enabled: false
+    manual_locations:
+      - Worldwide
+      - Remote
+      - Bangladesh
+output:
+  database_path: data/jobs.sqlite
+  csv_path: output/jobs.csv
