@@ -7,6 +7,17 @@ on:
         description: Path to the search config file.
         required: true
         default: config/search.yml
+      strictness:
+        description: Search strictness mode.
+        required: true
+        type: choice
+        default: evidence
+        options:
+          - strict
+          - evidence
+          - broad
+          - lenient
+          - discovery
       include_excluded:
         description: Include excluded matches in exported reports.
         required: true
@@ -67,7 +78,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          uv --cache-dir .uv-cache run job-finder scan --config "${{ inputs.config }}" 2>&1 | tee artifacts/scan.log
+          uv --cache-dir .uv-cache run job-finder scan --config "${{ inputs.config }}" --strictness "${{ inputs.strictness }}" 2>&1 | tee artifacts/scan.log
 
       - name: Export CSV
         if: always()
