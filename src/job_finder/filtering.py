@@ -29,6 +29,18 @@ ROLE_RULES = [
     _rule("Playwright", r"\bplaywright\b"),
 ]
 
+TITLE_ROLE_RULES = [
+    _rule("QA", r"\bq\.?a\.?\b"),
+    _rule("SQA", r"\bs\.?q\.?a\.?\b|\bsoftware quality assurance\b"),
+    _rule("SDET", r"\bsdet\b|\bsoftware development engineer(?:s)? in test\b"),
+    _rule("Quality Assurance", r"\bquality assurance\b"),
+    _rule("Test", r"\b(?:software )?test(?:ing)? (?:engineer|analyst|specialist|lead|manager)\b|\bsoftware tester\b|\btester\b"),
+    _rule("Automation", r"\b(?:qa|test) automation\b|\bautomation (?:qa|test|tester)\b"),
+    _rule("Selenium", r"\bselenium\b"),
+    _rule("Cypress", r"\bcypress\b"),
+    _rule("Playwright", r"\bplaywright\b"),
+]
+
 SUPPORT_POSITIVE_RULES = [
     _rule("visa sponsorship", r"\bvisa sponsorship\b|\bsponsor(?:ing)? visa\b|\bvisa support\b"),
     _rule("work authorization support", r"\bwork authorization support\b|\bimmigration support\b"),
@@ -71,13 +83,20 @@ class JobClassifier:
 
     def classify(self, job: JobPost) -> JobMatch:
         text = _normalize_text(job.searchable_text())
-        role_matches = _labels_for_rules(ROLE_RULES, text)
-        if not role_matches:
+        title_text = _normalize_text(job.title)
+        full_text_role_matches = _labels_for_rules(ROLE_RULES, text)
+        title_role_matches = _labels_for_rules(TITLE_ROLE_RULES, title_text)
+        if not title_role_matches:
+            reason = "role keyword mismatch"
+            if full_text_role_matches:
+                reason = "role keyword only found outside title"
             return JobMatch(
                 job=job,
                 status=MatchStatus.EXCLUDED,
-                reasons=["role keyword mismatch"],
+                matched_keywords=full_text_role_matches,
+                reasons=[reason],
             )
+        role_matches = _dedupe(title_role_matches + full_text_role_matches)
 
         positive_support = _labels_for_rules(SUPPORT_POSITIVE_RULES, text)
         negative_support = _labels_for_rules(SUPPORT_NEGATIVE_RULES, text)
@@ -161,6 +180,17 @@ def _labels_for_rules(rules: list[PatternRule], text: str) -> list[str]:
 
 def _normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
+
+
+def _dedupe(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
 
 
 def _remove_negated_support(positive: list[str], negative: list[str]) -> list[str]:

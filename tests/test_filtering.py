@@ -70,6 +70,17 @@ def test_excludes_non_qa_role() -> None:
     assert "role keyword mismatch" in match.reasons
 
 
+def test_excludes_non_qa_title_even_when_description_mentions_testing() -> None:
+    match = classify(
+        "Office Assistant",
+        "This role coordinates quality assurance reviews and test schedules. Remote worldwide.",
+        remote=True,
+    )
+
+    assert match.status == MatchStatus.EXCLUDED
+    assert "role keyword only found outside title" in match.reasons
+
+
 def test_excludes_us_only_remote() -> None:
     match = classify(
         "QA Engineer",
