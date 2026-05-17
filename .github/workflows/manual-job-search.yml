@@ -1,0 +1,95 @@
+name: Manual Job Search
+
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Path to the search config file.
+        required: true
+        default: config/search.yml
+      include_excluded:
+        description: Include excluded matches in exported reports.
+        required: true
+        type: boolean
+        default: false
+      run_tests:
+        description: Run the test suite before scanning.
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  scan:
+    name: Scan and upload results
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install dependencies
+        run: uv --cache-dir .uv-cache sync
+
+      - name: Run tests
+        if: ${{ inputs.run_tests }}
+        run: uv --cache-dir .uv-cache run pytest
+
+      - name: Prepare artifact directories
+        run: mkdir -p artifacts data output
+
+      - name: Save manual LinkedIn search URLs
+        shell: bash
+        run: |
+          set -o pipefail
+          uv --cache-dir .uv-cache run job-finder linkedin-searches --config "${{ inputs.config }}" 2>&1 | tee artifacts/linkedin-searches.txt
+
+      - name: Run job scan
+        shell: bash
+        run: |
+          set -o pipefail
+          uv --cache-dir .uv-cache run job-finder scan --config "${{ inputs.config }}" 2>&1 | tee artifacts/scan.log
+
+      - name: Export CSV
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.include_excluded }}" = "true" ]; then
+            uv --cache-dir .uv-cache run job-finder export --config "${{ inputs.config }}" --include-excluded 2>&1 | tee artifacts/export-csv.log
+          else
+            uv --cache-dir .uv-cache run job-finder export --config "${{ inputs.config }}" 2>&1 | tee artifacts/export-csv.log
+          fi
+
+      - name: Export Markdown
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.include_excluded }}" = "true" ]; then
+            uv --cache-dir .uv-cache run job-finder export-markdown --config "${{ inputs.config }}" --output output/jobs.md --include-excluded 2>&1 | tee artifacts/export-markdown.log
+          else
+            uv --cache-dir .uv-cache run job-finder export-markdown --config "${{ inputs.config }}" --output output/jobs.md 2>&1 | tee artifacts/export-markdown.log
+          fi
+
+      - name: Upload job search results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-search-results-${{ github.run_number }}
+          if-no-files-found: warn
+          path: |
+            data/
+            output/
+            artifacts/
