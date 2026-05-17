@@ -2,7 +2,7 @@ filters:
   target_country: Bangladesh
   # Options: strict, evidence, broad, lenient, discovery.
   # Use lenient or discovery when you want more results to review.
-  strictness: lenient
+  strictness: evidence
   role_keywords:
     - QA
     - Test
