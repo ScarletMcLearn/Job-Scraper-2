@@ -1,6 +1,8 @@
 filters:
   target_country: Bangladesh
-  strictness: evidence
+  # Options: strict, evidence, broad, lenient, discovery.
+  # Use lenient or discovery when you want more results to review.
+  strictness: lenient
   role_keywords:
     - QA
     - Test
@@ -24,12 +26,61 @@ sources:
   arbeitnow:
     enabled: true
     max_pages: 2
+  himalayas:
+    enabled: true
+    search_terms:
+      - qa
+      - test automation
+      - sdet
+      - quality assurance
+    max_pages: 2
+    page_size: 20
+  jobicy:
+    enabled: true
+    search_terms:
+      - qa
+      - test automation
+      - sdet
+      - quality assurance
+    count: 50
+  remoteok:
+    enabled: true
+    max_results: 100
+  remotejobs_org:
+    enabled: true
+    search_terms:
+      - qa
+      - test automation
+      - sdet
+      - quality assurance
+    limit: 50
+    max_pages: 2
+  weworkremotely:
+    enabled: true
+    feed_urls:
+      - https://weworkremotely.com/remote-jobs.rss
+    max_items_per_feed: 100
+  ashby:
+    enabled: true
+    # Add Ashby board names from URLs like https://jobs.ashbyhq.com/Ashby.
+    organization_names: []
+    include_compensation: false
   greenhouse:
     enabled: true
     board_tokens: []
   lever:
     enabled: true
     companies: []
+  smartrecruiters:
+    enabled: true
+    # Add company identifiers from URLs like https://careers.smartrecruiters.com/smartrecruiters.
+    companies: []
+    search_terms:
+      - qa
+      - test automation
+      - sdet
+      - quality assurance
+    limit: 50
   linkedin:
     enabled: false
     manual_locations:

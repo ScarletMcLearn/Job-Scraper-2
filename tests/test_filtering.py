@@ -1,9 +1,16 @@
+from job_finder.config import FilterConfig
 from job_finder.filtering import JobClassifier
 from job_finder.models import JobPost, MatchStatus
 
 
-def classify(title: str, description: str, location: str = "", remote: bool | None = None):
-    return JobClassifier().classify(
+def classify(
+    title: str,
+    description: str,
+    location: str = "",
+    remote: bool | None = None,
+    strictness: str = "evidence",
+):
+    return JobClassifier(FilterConfig(strictness=strictness)).classify(
         JobPost(
             source="test",
             source_id="1",
@@ -86,6 +93,85 @@ def test_excludes_us_only_remote() -> None:
         "QA Engineer",
         "Remote US-only role. Must be authorized to work in the United States.",
         remote=True,
+    )
+
+    assert match.status == MatchStatus.EXCLUDED
+    assert "US-only remote" in match.support_evidence
+
+
+def test_strict_excludes_remote_without_geography() -> None:
+    match = classify(
+        "Quality Assurance Analyst",
+        "Remote role for a product team.",
+        remote=True,
+        strictness="strict",
+    )
+
+    assert match.status == MatchStatus.EXCLUDED
+
+
+def test_broad_includes_remote_without_geography() -> None:
+    match = classify(
+        "Quality Assurance Analyst",
+        "Remote role for a product team.",
+        remote=True,
+        strictness="broad",
+    )
+
+    assert match.status == MatchStatus.INCLUDED
+
+
+def test_lenient_reviews_role_with_no_support_or_remote_evidence() -> None:
+    match = classify(
+        "QA Engineer",
+        "Build regression suites for a product team.",
+        strictness="lenient",
+    )
+
+    assert match.status == MatchStatus.REVIEW
+    assert "no visa, relocation, or eligible remote evidence" in match.reasons
+
+
+def test_lenient_accepts_description_only_role_signal_for_review() -> None:
+    match = classify(
+        "Office Assistant",
+        "This role coordinates quality assurance reviews and test schedules.",
+        strictness="lenient",
+    )
+
+    assert match.status == MatchStatus.REVIEW
+    assert "role keyword only found outside title" in match.reasons
+
+
+def test_lenient_includes_description_only_remote_role() -> None:
+    match = classify(
+        "Office Assistant",
+        "This role coordinates quality assurance reviews and test schedules. Remote role.",
+        remote=True,
+        strictness="lenient",
+    )
+
+    assert match.status == MatchStatus.INCLUDED
+    assert "role keyword only found outside title" in match.reasons
+
+
+def test_discovery_includes_qa_role_with_weak_evidence() -> None:
+    match = classify(
+        "QA Engineer",
+        "Build regression suites for a product team.",
+        strictness="discovery",
+    )
+
+    assert match.status == MatchStatus.INCLUDED
+    assert "included by discovery mode despite weak support evidence" in match.reasons
+
+
+def test_discovery_still_excludes_us_only_remote() -> None:
+    match = classify(
+        "QA Engineer",
+        "Remote US-only role. Must be authorized to work in the United States.",
+        remote=True,
+        strictness="discovery",
     )
 
     assert match.status == MatchStatus.EXCLUDED

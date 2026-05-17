@@ -82,11 +82,12 @@ class JobClassifier:
         self.config = config or FilterConfig()
 
     def classify(self, job: JobPost) -> JobMatch:
+        loose_role_matching = self.config.strictness in {"lenient", "discovery"}
         text = _normalize_text(job.searchable_text())
         title_text = _normalize_text(job.title)
         full_text_role_matches = _labels_for_rules(ROLE_RULES, text)
         title_role_matches = _labels_for_rules(TITLE_ROLE_RULES, title_text)
-        if not title_role_matches:
+        if not title_role_matches and not (loose_role_matching and full_text_role_matches):
             reason = "role keyword mismatch"
             if full_text_role_matches:
                 reason = "role keyword only found outside title"
@@ -97,6 +98,9 @@ class JobClassifier:
                 reasons=[reason],
             )
         role_matches = _dedupe(title_role_matches + full_text_role_matches)
+        role_reasons: list[str] = []
+        if not title_role_matches and full_text_role_matches:
+            role_reasons.append("role keyword only found outside title")
 
         positive_support = _labels_for_rules(SUPPORT_POSITIVE_RULES, text)
         negative_support = _labels_for_rules(SUPPORT_NEGATIVE_RULES, text)
@@ -117,7 +121,7 @@ class JobClassifier:
                 status=MatchStatus.INCLUDED,
                 matched_keywords=role_matches,
                 support_evidence=evidence,
-                reasons=reasons or ["visa or relocation support found"],
+                reasons=role_reasons + (reasons or ["visa or relocation support found"]),
             )
 
         if remote_restrictions and not remote_eligible:
@@ -126,7 +130,8 @@ class JobClassifier:
                 status=MatchStatus.EXCLUDED,
                 matched_keywords=role_matches,
                 support_evidence=negative_support + remote_restrictions,
-                reasons=["remote geography excludes Bangladesh or is restricted elsewhere"],
+                reasons=role_reasons
+                + ["remote geography excludes Bangladesh or is restricted elsewhere"],
             )
 
         if remote_eligible and (remote_flag or remote_markers):
@@ -135,7 +140,8 @@ class JobClassifier:
                 status=MatchStatus.INCLUDED,
                 matched_keywords=role_matches,
                 support_evidence=remote_markers + remote_eligible,
-                reasons=["remote eligibility includes Bangladesh, worldwide, Asia/APAC, or UTC+6"],
+                reasons=role_reasons
+                + ["remote eligibility includes Bangladesh, worldwide, Asia/APAC, or UTC+6"],
             )
 
         if negative_support and not (remote_flag or remote_markers):
@@ -144,12 +150,13 @@ class JobClassifier:
                 status=MatchStatus.EXCLUDED,
                 matched_keywords=role_matches,
                 support_evidence=negative_support,
-                reasons=["no visa, sponsorship, relocation, or qualifying remote support"],
+                reasons=role_reasons
+                + ["no visa, sponsorship, relocation, or qualifying remote support"],
             )
 
         if remote_flag or remote_markers:
             status = MatchStatus.REVIEW
-            if self.config.strictness == "broad":
+            if self.config.strictness in {"broad", "lenient", "discovery"}:
                 status = MatchStatus.INCLUDED
             elif self.config.strictness == "strict":
                 status = MatchStatus.EXCLUDED
@@ -158,7 +165,21 @@ class JobClassifier:
                 status=status,
                 matched_keywords=role_matches,
                 support_evidence=remote_markers or ["remote flag"],
-                reasons=["remote role needs manual geography verification"],
+                reasons=role_reasons + ["remote role needs manual geography verification"],
+            )
+
+        if self.config.strictness in {"lenient", "discovery"}:
+            status = MatchStatus.REVIEW
+            reason = "no visa, relocation, or eligible remote evidence"
+            if self.config.strictness == "discovery":
+                status = MatchStatus.INCLUDED
+                reason = "included by discovery mode despite weak support evidence"
+            return JobMatch(
+                job=job,
+                status=status,
+                matched_keywords=role_matches,
+                support_evidence=negative_support,
+                reasons=role_reasons + [reason],
             )
 
         return JobMatch(
@@ -166,7 +187,7 @@ class JobClassifier:
             status=MatchStatus.EXCLUDED,
             matched_keywords=role_matches,
             support_evidence=negative_support,
-            reasons=["no visa, relocation, or eligible remote evidence"],
+            reasons=role_reasons + ["no visa, relocation, or eligible remote evidence"],
         )
 
 

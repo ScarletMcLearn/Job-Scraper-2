@@ -5,12 +5,19 @@ import asyncio
 from rich.console import Console
 
 from job_finder.adapters import (
+    AshbyAdapter,
     ArbeitnowAdapter,
     GreenhouseAdapter,
+    HimalayasAdapter,
+    JobicyAdapter,
     LeverAdapter,
     LinkedinAuthorizedPlaceholderAdapter,
+    RemoteJobsOrgAdapter,
+    RemoteOkAdapter,
     RemotiveAdapter,
+    SmartRecruitersAdapter,
     SourceAdapterError,
+    WeWorkRemotelyAdapter,
 )
 from job_finder.config import AppConfig
 from job_finder.filtering import JobClassifier
@@ -67,10 +74,24 @@ def build_adapters(config: AppConfig):
         adapters.append(RemotiveAdapter(config.sources.remotive))
     if config.sources.arbeitnow.enabled:
         adapters.append(ArbeitnowAdapter(config.sources.arbeitnow))
+    if config.sources.himalayas.enabled:
+        adapters.append(HimalayasAdapter(config.sources.himalayas))
+    if config.sources.jobicy.enabled:
+        adapters.append(JobicyAdapter(config.sources.jobicy))
+    if config.sources.remoteok.enabled:
+        adapters.append(RemoteOkAdapter(config.sources.remoteok))
+    if config.sources.remotejobs_org.enabled:
+        adapters.append(RemoteJobsOrgAdapter(config.sources.remotejobs_org))
+    if config.sources.weworkremotely.enabled:
+        adapters.append(WeWorkRemotelyAdapter(config.sources.weworkremotely))
+    if config.sources.ashby.enabled and config.sources.ashby.organization_names:
+        adapters.append(AshbyAdapter(config.sources.ashby))
     if config.sources.greenhouse.enabled and config.sources.greenhouse.board_tokens:
         adapters.append(GreenhouseAdapter(config.sources.greenhouse))
     if config.sources.lever.enabled and config.sources.lever.companies:
         adapters.append(LeverAdapter(config.sources.lever))
+    if config.sources.smartrecruiters.enabled and config.sources.smartrecruiters.companies:
+        adapters.append(SmartRecruitersAdapter(config.sources.smartrecruiters))
     if config.sources.linkedin.enabled:
         adapters.append(LinkedinAuthorizedPlaceholderAdapter())
     return adapters
