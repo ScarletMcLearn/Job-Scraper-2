@@ -46,7 +46,11 @@ class JobStore:
             (now,),
         )
         self.connection.commit()
-        return int(cursor.lastrowid)
+        run_id = cursor.lastrowid
+        if run_id is None:
+            msg = "SQLite did not return a run id for the inserted scan run."
+            raise RuntimeError(msg)
+        return run_id
 
     def complete_run(self, run_id: int) -> None:
         self.connection.execute(

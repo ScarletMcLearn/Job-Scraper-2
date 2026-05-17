@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
     from job_finder.models import JobPost
@@ -15,9 +14,8 @@ class UnsupportedSourceError(SourceAdapterError):
     pass
 
 
-class JobSourceAdapter(ABC):
+class JobSourceAdapter(Protocol):
     name: str
 
-    @abstractmethod
     async def fetch(self) -> list[JobPost]:
-        raise NotImplementedError
+        ...

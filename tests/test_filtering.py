@@ -1,6 +1,10 @@
+from typing import Literal
+
 from job_finder.config import FilterConfig
 from job_finder.filtering import JobClassifier
 from job_finder.models import JobMatch, JobPost, MatchStatus
+
+Strictness = Literal["strict", "evidence", "broad", "lenient", "discovery"]
 
 
 def classify(
@@ -8,7 +12,7 @@ def classify(
     description: str,
     location: str = "",
     remote: bool | None = None,
-    strictness: str = "evidence",
+    strictness: Strictness = "evidence",
 ) -> JobMatch:
     return JobClassifier(FilterConfig(strictness=strictness)).classify(
         JobPost(
