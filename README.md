@@ -35,6 +35,13 @@ To run the full search and save a timestamped Markdown report:
 .\run-job-search.ps1
 ```
 
+The workflow prompts for a strictness mode before scanning. You can also skip
+the prompt by passing one explicitly:
+
+```powershell
+.\run-job-search.ps1 -Strictness strict
+```
+
 Reports are written under `artifacts/jobs/yy-mm-dd-hh-mm-ss-am/jobs.md`.
 
 ## Strictness modes
@@ -44,6 +51,12 @@ Set `filters.strictness` in `config/search.yml`:
 ```yaml
 filters:
   strictness: lenient
+```
+
+For a one-off scan without editing the config, pass `--strictness`:
+
+```powershell
+uv --cache-dir .uv-cache run job-finder scan --config config/search.yml --strictness strict
 ```
 
 - `strict`: only include roles with explicit visa, relocation, or eligible remote evidence.

@@ -20,6 +20,8 @@ DEFAULT_ROLE_KEYWORDS = [
     "playwright",
 ]
 
+StrictnessMode = Literal["strict", "evidence", "broad", "lenient", "discovery"]
+
 
 class RemotiveConfig(BaseModel):
     enabled: bool = True
@@ -123,9 +125,7 @@ class SourcesConfig(BaseModel):
 
 class FilterConfig(BaseModel):
     target_country: str = "Bangladesh"
-    strictness: Literal["strict", "evidence", "broad", "lenient", "discovery"] = (
-        "evidence"
-    )
+    strictness: StrictnessMode = "evidence"
     role_keywords: list[str] = Field(default_factory=DEFAULT_ROLE_KEYWORDS.copy)
 
 

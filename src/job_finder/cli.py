@@ -7,7 +7,12 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from job_finder.config import AppConfig, dump_default_config, load_config
+from job_finder.config import (
+    AppConfig,
+    StrictnessMode,
+    dump_default_config,
+    load_config,
+)
 from job_finder.models import MatchStatus
 from job_finder.runner import run_scan
 from job_finder.storage import JobStore
@@ -27,9 +32,23 @@ def scan(
         "-c",
         help="Path to the YAML search config.",
     ),
+    strictness: StrictnessMode | None = typer.Option(
+        None,
+        "--strictness",
+        "-s",
+        help="Override filters.strictness for this scan.",
+    ),
 ) -> None:
     """Fetch configured sources, filter jobs, save SQLite, and export CSV."""
     app_config = _load_or_create_config(config)
+    if strictness is not None:
+        app_config = app_config.model_copy(
+            update={
+                "filters": app_config.filters.model_copy(
+                    update={"strictness": strictness}
+                )
+            }
+        )
     summary = run_scan(app_config, console)
 
     table = Table(title=f"Scan {summary.run_id}")
