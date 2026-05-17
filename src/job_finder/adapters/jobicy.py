@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import httpx
 
-from job_finder.config import JobicyConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import JobicyConfig
 
 
 class JobicyAdapter:

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import httpx
 
-from job_finder.config import HimalayasConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import HimalayasConfig
 
 
 class HimalayasAdapter:
@@ -69,7 +72,9 @@ class HimalayasAdapter:
         locations = []
         for restriction in restrictions:
             if isinstance(restriction, dict):
-                locations.append(str(restriction.get("name") or restriction.get("alpha2") or ""))
+                locations.append(
+                    str(restriction.get("name") or restriction.get("alpha2") or "")
+                )
             else:
                 locations.append(str(restriction))
         return ", ".join(location for location in locations if location)

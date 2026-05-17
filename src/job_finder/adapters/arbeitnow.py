@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import httpx
 
-from job_finder.config import ArbeitnowConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import ArbeitnowConfig
 
 
 class ArbeitnowAdapter:
@@ -26,11 +29,12 @@ class ArbeitnowAdapter:
         try:
             jobs: list[JobPost] = []
             for page in range(1, self.config.max_pages + 1):
-                response = await client.get(f"{self.base_url}?{urlencode({'page': page})}")
+                response = await client.get(
+                    f"{self.base_url}?{urlencode({'page': page})}"
+                )
                 response.raise_for_status()
                 payload = response.json()
-                for item in payload.get("data", []):
-                    jobs.append(self._parse_job(item))
+                jobs.extend(self._parse_job(item) for item in payload.get("data", []))
             return jobs
         finally:
             if close_client:

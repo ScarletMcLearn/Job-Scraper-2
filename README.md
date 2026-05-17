@@ -19,6 +19,8 @@ Dependencies are managed with `uv` and pinned exactly in `pyproject.toml`.
 uv --cache-dir .uv-cache sync
 uv --cache-dir .uv-cache run job-finder scan --config config/search.yml
 uv --cache-dir .uv-cache run job-finder export --config config/search.yml
+uv --cache-dir .uv-cache run ruff check .
+uv --cache-dir .uv-cache run ruff format .
 uv --cache-dir .uv-cache run pytest
 ```
 

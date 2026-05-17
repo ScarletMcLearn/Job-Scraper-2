@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from xml.etree import ElementTree
+from typing import TYPE_CHECKING
+from xml.etree import ElementTree as ET
 
 import httpx
 
-from job_finder.config import WeWorkRemotelyConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import WeWorkRemotelyConfig
 
 
 class WeWorkRemotelyAdapter:
@@ -28,7 +31,7 @@ class WeWorkRemotelyAdapter:
             for feed_url in self.config.feed_urls:
                 response = await client.get(feed_url)
                 response.raise_for_status()
-                root = ElementTree.fromstring(response.content)
+                root = ET.fromstring(response.content)  # noqa: S314
                 for item in root.findall(".//item")[: self.config.max_items_per_feed]:
                     job = self._parse_item(item)
                     key = job.url or f"{job.source}:{job.source_id}"
@@ -41,7 +44,7 @@ class WeWorkRemotelyAdapter:
             if close_client:
                 await client.aclose()
 
-    def _parse_item(self, item: ElementTree.Element) -> JobPost:
+    def _parse_item(self, item: ET.Element) -> JobPost:
         raw_title = _child_text(item, "title")
         company, title = _split_title(raw_title)
         link = _child_text(item, "link")
@@ -71,7 +74,7 @@ class WeWorkRemotelyAdapter:
         )
 
 
-def _child_text(item: ElementTree.Element, tag: str) -> str:
+def _child_text(item: ET.Element, tag: str) -> str:
     child = item.find(tag)
     return "" if child is None or child.text is None else child.text.strip()
 

@@ -6,7 +6,6 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, Field
 
-
 DEFAULT_ROLE_KEYWORDS = [
     "QA",
     "Test",
@@ -116,14 +115,18 @@ class SourcesConfig(BaseModel):
     ashby: AshbyConfig = Field(default_factory=AshbyConfig)
     greenhouse: GreenhouseConfig = Field(default_factory=GreenhouseConfig)
     lever: LeverConfig = Field(default_factory=LeverConfig)
-    smartrecruiters: SmartRecruitersConfig = Field(default_factory=SmartRecruitersConfig)
+    smartrecruiters: SmartRecruitersConfig = Field(
+        default_factory=SmartRecruitersConfig
+    )
     linkedin: LinkedinConfig = Field(default_factory=LinkedinConfig)
 
 
 class FilterConfig(BaseModel):
     target_country: str = "Bangladesh"
-    strictness: Literal["strict", "evidence", "broad", "lenient", "discovery"] = "evidence"
-    role_keywords: list[str] = Field(default_factory=lambda: DEFAULT_ROLE_KEYWORDS.copy())
+    strictness: Literal["strict", "evidence", "broad", "lenient", "discovery"] = (
+        "evidence"
+    )
+    role_keywords: list[str] = Field(default_factory=DEFAULT_ROLE_KEYWORDS.copy)
 
 
 class OutputConfig(BaseModel):
@@ -142,7 +145,8 @@ def load_config(path: Path) -> AppConfig:
         return AppConfig()
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if not isinstance(data, dict):
-        raise ValueError(f"Config file must contain a YAML mapping: {path}")
+        msg = f"Config file must contain a YAML mapping: {path}"
+        raise TypeError(msg)
     return AppConfig.model_validate(data)
 
 

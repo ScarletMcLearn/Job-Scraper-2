@@ -1,6 +1,10 @@
-from job_finder.adapters.ashby import AshbyAdapter
 from job_finder.adapters.arbeitnow import ArbeitnowAdapter
-from job_finder.adapters.base import JobSourceAdapter, SourceAdapterError, UnsupportedSourceError
+from job_finder.adapters.ashby import AshbyAdapter
+from job_finder.adapters.base import (
+    JobSourceAdapter,
+    SourceAdapterError,
+    UnsupportedSourceError,
+)
 from job_finder.adapters.greenhouse import GreenhouseAdapter
 from job_finder.adapters.himalayas import HimalayasAdapter
 from job_finder.adapters.jobicy import JobicyAdapter
@@ -13,12 +17,12 @@ from job_finder.adapters.smartrecruiters import SmartRecruitersAdapter
 from job_finder.adapters.weworkremotely import WeWorkRemotelyAdapter
 
 __all__ = [
-    "AshbyAdapter",
     "ArbeitnowAdapter",
+    "AshbyAdapter",
     "GreenhouseAdapter",
     "HimalayasAdapter",
-    "JobicyAdapter",
     "JobSourceAdapter",
+    "JobicyAdapter",
     "LeverAdapter",
     "LinkedinAuthorizedPlaceholderAdapter",
     "RemoteJobsOrgAdapter",

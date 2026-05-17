@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from job_finder.config import SmartRecruitersConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import SmartRecruitersConfig
 
 
 class SmartRecruitersAdapter:
@@ -31,7 +33,9 @@ class SmartRecruitersAdapter:
                     params: dict[str, Any] = {"limit": self.config.limit}
                     if query:
                         params["q"] = query
-                    response = await client.get(f"{self.base_url}/{company}/postings", params=params)
+                    response = await client.get(
+                        f"{self.base_url}/{company}/postings", params=params
+                    )
                     response.raise_for_status()
                     payload = response.json()
                     for item in payload.get("content", []):
@@ -57,7 +61,9 @@ class SmartRecruitersAdapter:
         if not posting_id:
             return {}
         try:
-            response = await client.get(f"{self.base_url}/{company}/postings/{posting_id}")
+            response = await client.get(
+                f"{self.base_url}/{company}/postings/{posting_id}"
+            )
             response.raise_for_status()
             payload = response.json()
         except httpx.HTTPError:
@@ -77,7 +83,9 @@ class SmartRecruitersAdapter:
             location=_format_location(location),
             remote=_remote_flag(location),
             description=_format_description(record),
-            published_at=normalize_datetime(record.get("releasedDate") or item.get("releasedDate")),
+            published_at=normalize_datetime(
+                record.get("releasedDate") or item.get("releasedDate")
+            ),
             raw=record,
         )
 
@@ -105,11 +113,15 @@ def _format_description(record: dict) -> str:
     sections = job_ad.get("sections") or {}
     description_parts: list[str] = []
     if isinstance(sections, dict):
-        for section in sections.values():
-            if isinstance(section, dict):
-                description_parts.append(str(section.get("text") or ""))
+        description_parts.extend(
+            str(section.get("text") or "")
+            for section in sections.values()
+            if isinstance(section, dict)
+        )
     for key in ("department", "function", "typeOfEmployment", "experienceLevel"):
         value = record.get(key)
         if isinstance(value, dict):
-            description_parts.append(str(value.get("label") or value.get("description") or ""))
+            description_parts.append(
+                str(value.get("label") or value.get("description") or "")
+            )
     return " ".join(part for part in description_parts if part)

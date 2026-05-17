@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import httpx
 
-from job_finder.config import RemotiveConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import RemotiveConfig
 
 
 class RemotiveAdapter:
@@ -27,7 +30,9 @@ class RemotiveAdapter:
             jobs: list[JobPost] = []
             seen: set[str] = set()
             for term in self.config.search_terms:
-                response = await client.get(f"{self.base_url}?{urlencode({'search': term})}")
+                response = await client.get(
+                    f"{self.base_url}?{urlencode({'search': term})}"
+                )
                 response.raise_for_status()
                 payload = response.json()
                 for item in payload.get("jobs", []):

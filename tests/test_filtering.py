@@ -1,6 +1,6 @@
 from job_finder.config import FilterConfig
 from job_finder.filtering import JobClassifier
-from job_finder.models import JobPost, MatchStatus
+from job_finder.models import JobMatch, JobPost, MatchStatus
 
 
 def classify(
@@ -9,7 +9,7 @@ def classify(
     location: str = "",
     remote: bool | None = None,
     strictness: str = "evidence",
-):
+) -> JobMatch:
     return JobClassifier(FilterConfig(strictness=strictness)).classify(
         JobPost(
             source="test",

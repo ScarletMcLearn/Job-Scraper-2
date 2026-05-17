@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
-from job_finder.config import AshbyConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import AshbyConfig
 
 
 class AshbyAdapter:
@@ -26,7 +30,11 @@ class AshbyAdapter:
             for organization_name in self.config.organization_names:
                 response = await client.get(
                     f"{self.base_url}/{organization_name}",
-                    params={"includeCompensation": str(self.config.include_compensation).lower()},
+                    params={
+                        "includeCompensation": str(
+                            self.config.include_compensation
+                        ).lower()
+                    },
                 )
                 response.raise_for_status()
                 payload = response.json()
@@ -48,7 +56,9 @@ class AshbyAdapter:
             url=str(item.get("jobUrl") or item.get("applyUrl") or "").strip(),
             location=_format_locations(item),
             remote=_remote_flag(item),
-            description=str(item.get("descriptionHtml") or item.get("descriptionPlain") or ""),
+            description=str(
+                item.get("descriptionHtml") or item.get("descriptionPlain") or ""
+            ),
             published_at=normalize_datetime(item.get("publishedAt")),
             raw=item,
         )

@@ -5,7 +5,10 @@ from enum import StrEnum
 from typing import Any
 
 from bs4 import BeautifulSoup
+from dateutil.parser import parse
 from pydantic import BaseModel, Field, HttpUrl, field_serializer
+
+MILLISECONDS_TIMESTAMP_THRESHOLD = 10_000_000_000
 
 
 class MatchStatus(StrEnum):
@@ -70,17 +73,15 @@ def html_to_text(value: str) -> str:
     return BeautifulSoup(value, "html.parser").get_text(" ", strip=True)
 
 
-def normalize_datetime(value: Any) -> datetime | None:
+def normalize_datetime(value: object) -> datetime | None:
     if value in (None, ""):
         return None
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=UTC)
     if isinstance(value, int | float):
-        if value > 10_000_000_000:
+        if value > MILLISECONDS_TIMESTAMP_THRESHOLD:
             value = value / 1000
         return datetime.fromtimestamp(value, tz=UTC)
-
-    from dateutil.parser import parse
 
     try:
         parsed = parse(str(value))

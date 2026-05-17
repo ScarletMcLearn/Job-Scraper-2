@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
-from job_finder.config import GreenhouseConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import GreenhouseConfig
 
 
 class GreenhouseAdapter:
@@ -30,8 +34,10 @@ class GreenhouseAdapter:
                 )
                 response.raise_for_status()
                 payload = response.json()
-                for item in payload.get("jobs", []):
-                    jobs.append(self._parse_job(board_token, item))
+                jobs.extend(
+                    self._parse_job(board_token, item)
+                    for item in payload.get("jobs", [])
+                )
             return jobs
         finally:
             if close_client:

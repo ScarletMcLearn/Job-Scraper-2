@@ -3,8 +3,8 @@ import json
 
 import httpx
 
-from job_finder.adapters.ashby import AshbyAdapter
 from job_finder.adapters.arbeitnow import ArbeitnowAdapter
+from job_finder.adapters.ashby import AshbyAdapter
 from job_finder.adapters.greenhouse import GreenhouseAdapter
 from job_finder.adapters.himalayas import HimalayasAdapter
 from job_finder.adapters.jobicy import JobicyAdapter
@@ -15,8 +15,8 @@ from job_finder.adapters.remotive import RemotiveAdapter
 from job_finder.adapters.smartrecruiters import SmartRecruitersAdapter
 from job_finder.adapters.weworkremotely import WeWorkRemotelyAdapter
 from job_finder.config import (
-    AshbyConfig,
     ArbeitnowConfig,
+    AshbyConfig,
     GreenhouseConfig,
     HimalayasConfig,
     JobicyConfig,
@@ -52,7 +52,9 @@ def test_remotive_adapter_parses_jobs() -> None:
             )
         )
         try:
-            return await RemotiveAdapter(RemotiveConfig(search_terms=["qa"]), client).fetch()
+            return await RemotiveAdapter(
+                RemotiveConfig(search_terms=["qa"]), client
+            ).fetch()
         finally:
             await client.aclose()
 
@@ -121,7 +123,9 @@ def test_greenhouse_adapter_parses_jobs() -> None:
             )
         )
         try:
-            return await GreenhouseAdapter(GreenhouseConfig(board_tokens=["example"]), client).fetch()
+            return await GreenhouseAdapter(
+                GreenhouseConfig(board_tokens=["example"]), client
+            ).fetch()
         finally:
             await client.aclose()
 
@@ -192,7 +196,9 @@ def test_jobicy_adapter_parses_jobs() -> None:
             )
         )
         try:
-            return await JobicyAdapter(JobicyConfig(search_terms=["sdet"], count=1), client).fetch()
+            return await JobicyAdapter(
+                JobicyConfig(search_terms=["sdet"], count=1), client
+            ).fetch()
         finally:
             await client.aclose()
 
@@ -298,7 +304,9 @@ def test_weworkremotely_adapter_parses_rss_items() -> None:
         </rss>
         """
         client = httpx.AsyncClient(
-            transport=httpx.MockTransport(lambda request: httpx.Response(200, content=rss))
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(200, content=rss)
+            )
         )
         try:
             return await WeWorkRemotelyAdapter(
@@ -342,7 +350,9 @@ def test_ashby_adapter_parses_jobs() -> None:
             )
         )
         try:
-            return await AshbyAdapter(AshbyConfig(organization_names=["example"]), client).fetch()
+            return await AshbyAdapter(
+                AshbyConfig(organization_names=["example"]), client
+            ).fetch()
         finally:
             await client.aclose()
 
@@ -371,11 +381,15 @@ def test_lever_adapter_parses_jobs() -> None:
         ]
         client = httpx.AsyncClient(
             transport=httpx.MockTransport(
-                lambda request: httpx.Response(200, content=json.dumps(payload).encode())
+                lambda request: httpx.Response(
+                    200, content=json.dumps(payload).encode()
+                )
             )
         )
         try:
-            return await LeverAdapter(LeverConfig(companies=["example"]), client).fetch()
+            return await LeverAdapter(
+                LeverConfig(companies=["example"]), client
+            ).fetch()
         finally:
             await client.aclose()
 
@@ -427,7 +441,10 @@ def test_smartrecruiters_adapter_parses_jobs_with_details() -> None:
         client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
         try:
             return await SmartRecruitersAdapter(
-                SmartRecruitersConfig(companies=["example"], search_terms=["qa"], limit=1), client
+                SmartRecruitersConfig(
+                    companies=["example"], search_terms=["qa"], limit=1
+                ),
+                client,
             ).fetch()
         finally:
             await client.aclose()

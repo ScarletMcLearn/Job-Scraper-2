@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
 from job_finder.adapters import (
-    AshbyAdapter,
     ArbeitnowAdapter,
+    AshbyAdapter,
     GreenhouseAdapter,
     HimalayasAdapter,
     JobicyAdapter,
@@ -19,10 +20,13 @@ from job_finder.adapters import (
     SourceAdapterError,
     WeWorkRemotelyAdapter,
 )
-from job_finder.config import AppConfig
 from job_finder.filtering import JobClassifier
 from job_finder.models import MatchStatus, ScanSummary
 from job_finder.storage import JobStore
+
+if TYPE_CHECKING:
+    from job_finder.adapters.base import JobSourceAdapter
+    from job_finder.config import AppConfig
 
 
 async def scan(config: AppConfig, console: Console | None = None) -> ScanSummary:
@@ -68,8 +72,8 @@ async def scan(config: AppConfig, console: Console | None = None) -> ScanSummary
         store.close()
 
 
-def build_adapters(config: AppConfig):
-    adapters = []
+def build_adapters(config: AppConfig) -> list[JobSourceAdapter]:
+    adapters: list[JobSourceAdapter] = []
     if config.sources.remotive.enabled:
         adapters.append(RemotiveAdapter(config.sources.remotive))
     if config.sources.arbeitnow.enabled:
@@ -90,7 +94,10 @@ def build_adapters(config: AppConfig):
         adapters.append(GreenhouseAdapter(config.sources.greenhouse))
     if config.sources.lever.enabled and config.sources.lever.companies:
         adapters.append(LeverAdapter(config.sources.lever))
-    if config.sources.smartrecruiters.enabled and config.sources.smartrecruiters.companies:
+    if (
+        config.sources.smartrecruiters.enabled
+        and config.sources.smartrecruiters.companies
+    ):
         adapters.append(SmartRecruitersAdapter(config.sources.smartrecruiters))
     if config.sources.linkedin.enabled:
         adapters.append(LinkedinAuthorizedPlaceholderAdapter())

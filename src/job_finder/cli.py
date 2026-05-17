@@ -26,7 +26,7 @@ def scan(
         "--config",
         "-c",
         help="Path to the YAML search config.",
-    )
+    ),
 ) -> None:
     """Fetch configured sources, filter jobs, save SQLite, and export CSV."""
     app_config = _load_or_create_config(config)
@@ -50,7 +50,7 @@ def linkedin_searches(
         "--config",
         "-c",
         help="Path to the YAML search config.",
-    )
+    ),
 ) -> None:
     """Print manual LinkedIn search URLs; this does not scrape LinkedIn."""
     app_config = _load_or_create_config(config)
@@ -84,7 +84,9 @@ def export(
         count = store.export_csv(app_config.output.csv_path, statuses=statuses)
     finally:
         store.close()
-    console.print(f"[green]Exported[/green] {count} rows to {app_config.output.csv_path}")
+    console.print(
+        f"[green]Exported[/green] {count} rows to {app_config.output.csv_path}"
+    )
 
 
 @app.command("export-markdown")

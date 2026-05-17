@@ -27,6 +27,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest==9.0.3",
+    "ruff==0.15.13",
 ]
 
 [tool.pytest.ini_options]
@@ -41,3 +42,37 @@ norecursedirs = [
     "data",
     "output",
 ]
+
+[tool.ruff]
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812", # Conflicts with the Ruff formatter.
+    "CPY001", # The project has no copyright-header convention.
+    "D100", # Internal CLI modules do not use module docstrings consistently.
+    "D101", # Internal data/config classes are self-describing through names and fields.
+    "D102", # Public methods are small command/storage/adapter operations.
+    "D103", # Public functions are mostly CLI and helper entry points.
+    "D104", # Package docstrings are not part of the project convention.
+    "D107", # Constructor signatures are clearer than repeated init docstrings here.
+    "D203", # Conflicts with D211.
+    "D213", # Conflicts with D212.
+    "E501", # Ruff formatter leaves long strings and regex literals unchanged.
+    "ISC001", # Conflicts with the Ruff formatter.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "FBT001",
+    "ANN202",
+    "ARG005",
+    "PLR2004",
+    "S101",
+]
+"src/job_finder/cli.py" = ["B008", "FBT001", "FBT003"]
+"src/job_finder/filtering.py" = ["C901", "PLR0911", "PLR0912"]
+"src/job_finder/runner.py" = ["C901"]
+"src/job_finder/storage.py" = ["S608"]

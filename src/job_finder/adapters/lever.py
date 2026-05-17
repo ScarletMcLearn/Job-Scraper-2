@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 
-from job_finder.config import LeverConfig
 from job_finder.models import JobPost, normalize_datetime
+
+if TYPE_CHECKING:
+    from job_finder.config import LeverConfig
 
 
 class LeverAdapter:
@@ -30,8 +34,7 @@ class LeverAdapter:
                 )
                 response.raise_for_status()
                 payload = response.json()
-                for item in payload:
-                    jobs.append(self._parse_job(company, item))
+                jobs.extend(self._parse_job(company, item) for item in payload)
             return jobs
         finally:
             if close_client:
@@ -44,8 +47,9 @@ class LeverAdapter:
             item.get("descriptionPlain") or "",
             item.get("additional") or "",
         ]
-        for list_item in item.get("lists") or []:
-            description_parts.append(str(list_item.get("content") or ""))
+        description_parts.extend(
+            str(list_item.get("content") or "") for list_item in item.get("lists") or []
+        )
 
         return JobPost(
             source=self.name,

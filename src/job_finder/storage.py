@@ -3,11 +3,13 @@ from __future__ import annotations
 import csv
 import json
 import sqlite3
-from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from job_finder.models import JobMatch, MatchStatus, now_utc
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
 CSV_COLUMNS = [
     "status",
@@ -158,8 +160,10 @@ class JobStore:
             "",
             f"- Total jobs: {len(rows)}",
         ]
-        for status in statuses:
-            lines.append(f"- {status.value.title()}: {status_counts.get(status.value, 0)}")
+        lines.extend(
+            f"- {status.value.title()}: {status_counts.get(status.value, 0)}"
+            for status in statuses
+        )
 
         for status in statuses:
             status_rows = [row for row in rows if row["status"] == status.value]
