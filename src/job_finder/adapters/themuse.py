@@ -7,6 +7,8 @@ import httpx
 from job_finder.models import JobPost, normalize_datetime
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from job_finder.config import TheMuseConfig
 
 HTTP_BAD_REQUEST = 400
@@ -94,7 +96,7 @@ class TheMuseAdapter:
         )
 
 
-def _clean_params(params: dict[str, object]) -> dict[str, object]:
+def _clean_params(params: Mapping[str, str | int | None]) -> dict[str, str | int]:
     return {key: value for key, value in params.items() if value not in (None, "")}
 
 
