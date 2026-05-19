@@ -147,6 +147,7 @@ class AdzunaConfig(BaseModel):
     locations: list[str] = Field(default_factory=lambda: ["remote", ""])
     max_pages: int = 2
     results_per_page: int = 50
+    request_delay_seconds: float = 0.0
 
 
 class JoobleConfig(BaseModel):

@@ -112,28 +112,17 @@ sources:
     app_key_env: ADZUNA_APP_KEY
     search_terms:
       - qa
-      - qa engineer
-      - qa analyst
-      - quality assurance
-      - quality engineer
-      - software quality engineer
-      - test engineer
-      - test automation
-      - manual tester
-      - sdet
-      - automation engineer
     country_codes:
       - gb
       - us
       - ca
-      - au
-      - sg
-      - in
+    # Adzuna does not reliably return remote roles through where=remote.
+    # Search broadly and let the evidence filters reject non-eligible roles.
     locations:
-      - remote
       - ""
-    max_pages: 2
-    results_per_page: 50
+    max_pages: 1
+    results_per_page: 20
+    request_delay_seconds: 1.0
   jooble:
     enabled: true
     api_key_env: JOOBLE_API_KEY

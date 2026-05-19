@@ -475,6 +475,53 @@ def test_adzuna_adapter_parses_jobs() -> None:
     assert jobs[0].remote is True
 
 
+def test_adzuna_adapter_returns_partial_jobs_on_rate_limit() -> None:
+    responses = [
+        httpx.Response(
+            200,
+            json={
+                "results": [
+                    {
+                        "id": "adz-1",
+                        "title": "QA Engineer",
+                        "company": {"display_name": "Example"},
+                        "redirect_url": "https://example.com/adzuna/qa",
+                        "location": {"display_name": "Remote, United Kingdom"},
+                        "description": "Remote worldwide. Visa support.",
+                        "created": "2026-01-01T00:00:00Z",
+                    }
+                ]
+            },
+        ),
+        httpx.Response(429, json={"error": "rate limited"}),
+    ]
+
+    async def run():
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda request: responses.pop(0))
+        )
+        try:
+            return await AdzunaAdapter(
+                AdzunaConfig(
+                    search_terms=["qa"],
+                    country_codes=["gb"],
+                    locations=["remote"],
+                    max_pages=2,
+                    results_per_page=1,
+                ),
+                "app-id",
+                "app-key",
+                client,
+            ).fetch()
+        finally:
+            await client.aclose()
+
+    jobs = asyncio.run(run())
+
+    assert len(jobs) == 1
+    assert jobs[0].source == "adzuna"
+
+
 def test_jooble_adapter_parses_jobs() -> None:
     async def run():
         client = httpx.AsyncClient(
